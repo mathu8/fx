@@ -1,0 +1,103 @@
+license boot module c2900 technology-package securityk9
+
+access-list 110 permit udp host 10.10.10.2 host 10.10.10.1 eq isakmp
+access-list 110 permit udp host 10.10.10.2 host 10.10.10.1 eq non500-isakmp
+access-list 110 permit ahp host 10.10.10.2 host 10.10.10.1 
+access-list 110 permit esp host 10.10.10.2 host 10.10.10.1
+
+access-list 120 permit ip 192.168.10.0 0.0.0.255 192.168.20.0 0.0.0.255
+access-list 120 permit ip 192.168.20.0 0.0.0.255 192168.10.0 0.0.0.255
+
+crypto isamkp policy 50
+authentication pre-share
+group 5
+lifetime 86400
+hash sha
+
+crypto isakmp key mathu1997 address 10.10.10.2
+crypto isakmp key mathu1997 address 10.10.10.1
+
+crpto ipsec transfrm-set R1->R2 esp-aes esp-sha-hmac
+crpto ipsec transform-set R2->R1 esp-aes esp-sha-hmac
+
+
+crypto map R1-map 20 ipsec-isakmp
+match address 120
+set transform-set R1->R2
+set peer 10.10.10.2
+ser security-association lifetime second 86400
+
+int g0/0
+crypto map R1-map
+
+
+int g0/1
+crypto map R2map
+
+
+show crpto isakmp sa
+show crypto ipsec sa
+
+
+
+
+
+int f0/1
+switch port-security mac-address define mac
+switch port-security voilation shutdown
+
+
+
+int f0/1
+sw port-security mac-address sticky
+sw port-security voilation restrict
+sw port-security maximum 
+
+show port-security interface f0/1
+
+
+crypto domain name cisco.com
+crypto key generator rsa
+
+username mathu secret 1234
+aaa new-model
+aaa authentication login default local
+
+
+line console 0
+login authentication default
+
+
+aaa authentication login ssh-login local
+
+line vty 0 4
+login authentication ssh-login
+transform input ssh
+
+
+crypto domain name cisco.com
+crypto key generator rsa
+
+
+
+tacas-server host 192.168.2.2
+tacs-server key 1234
+
+username mathu secret 1234
+aaa authentication login default group tacacs+ local
+
+line console 0
+login authentication defult
+
+
+line vty 0 4
+login authentication default 
+transform input ssh
+
+
+
+
+
+
+
+
